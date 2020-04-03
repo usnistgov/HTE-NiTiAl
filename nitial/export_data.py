@@ -24,12 +24,12 @@ def remove_autorange_artifacts(data):
     for s in segment.unique():
         mask = segment == s
         absval = np.abs(I[mask])
-        _log_current = np.log(np.clip(absval, absval[absval > 0].min(), np.inf))
+        _log_current = np.log10(np.clip(absval, absval[absval > 0].min(), np.inf))
         a = cycvolt.analyze.model_autorange_artifacts(V[mask], I[mask])
         _log_current = _log_current - a
         log_I[mask] = _log_current
 
-    return np.exp(log_I)
+    return np.power(10, log_I)
 
 if __name__ == '__main__':
 
