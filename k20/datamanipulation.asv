@@ -1,0 +1,83 @@
+close all
+clear all
+fileloc='G:\My Drive\k20'
+fileexten='k20_051818_1_24x24_t45_'
+fileend='_1D (1).csv'
+
+numspec=length(dir(strcat(fileloc,'\*).csv')))
+n=0
+a=1
+while a<=numspec
+    file=sprintf('%s\\%s%04u%s',fileloc,fileexten,n,fileend);
+    if length(dir(file))
+        data(a,:,:)=importdata(file);
+        a=a+1
+    end
+    n=n+1
+end
+for b=1:numspec
+    inten=data(b,:,2)-min(data(b,:,2));
+    plot(data(b,:,1),inten)
+    peak=find_peak(data(b,:,1)',inten');
+    hold on
+    fwhm(b)=peak.fwhm;
+    cen(b)=peak.com;
+   
+end
+%%
+jae=importdata('G:\My Drive\k20\fromjae.csv')
+
+%%
+pos=jae
+[xi,yi]=meshgrid(-33:.1:33,-38:.1:38);
+    zi = griddata(pos.data(:,3),pos.data(:,2),fwhm,xi,yi);
+    %zi(zi>.65)=.65
+    figure()
+    surf(xi,yi,zi)
+    %contourf(xi,yi,zi)
+    axis square
+    colormap jet
+    shading interp
+    hold on
+    plot(pos.data(:,2),pos.data(:,3),'kx')
+    title('fwhm')
+    %%
+    pos=importdata('G:\My Drive\HJ_NIST_General\177point_map.csv');
+[xi,yi]=meshgrid(-35:.1:35,-23:.1:27);
+    zi = griddata(pos.data(:,2),pos.data(:,3),cen,xi,yi);
+    
+    figure()
+    contourf(xi,yi,zi)
+    axis square
+    colormap jet
+    shading interp
+    hold on
+    plot(pos.data(:,2),pos.data(:,3),'kx')
+    title('Cen')
+    
+    %%
+    close all
+clear all
+fileloc='G:\My Drive\k20'
+fileexten='k20_051818_1_24x24_t45_'
+fileend='_1D (1).csv'
+figure()
+hold on
+b=1
+thresh=[.5 .5 .5]
+for n=[235 239 248]
+file=sprintf('%s\\%s%04u%s',fileloc,fileexten,n,fileend);
+data=importdata(file);
+inten=data(:,2)-min(data(:,2));
+    plot(data(:,1),inten)
+    peak=find_peak(data(:,1),inten,'thresh',thresh(b));
+    fwhm(b)=peak.fwhm;
+    cen(b)=peak.com;
+    plot([peak.xl peak.xr],inten(round([peak.xli peak.xli])),'k-','HandleVisibility','off','LineWidth',2)
+    b=b+1;
+end
+box on
+xlabel(strcat('q(',char(197),'^{-1}',')'))
+ylabel('Intensity (counts)')
+ylim([0 800])
+legend('Ni$_{63.8}$Ti$_{14.9}$Al$_{21.3}$, FWHM=0.129$\textrm{\AA}^{-1}$','Ni$_{49.8}$Ti$_{23.1}$Al$_{27.1}$, FWHM=0.319$\textrm{\AA}^{-1}$','Ni$_{21.1}$Ti$_{49.1}$Al$_{29.8}$, FWHM=0.514$\textrm{\AA}^{-1}$','Interpreter','latex','Fontname','Calibri')
